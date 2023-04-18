@@ -234,7 +234,7 @@ elif command == 'create_token':
     create_token(nft['peppermint_handler'], nft['token_id'])
 elif command == 'mint_token':
     mint_token(nft['destinations'])
-elif command = 'full_service':
+elif command == 'full_service':
     upload_ipfs()
     create_token(nft['peppermint_handler'], nft['token_id'])
     mint_token(nft['destinations'])
