@@ -167,8 +167,8 @@ def create_ipfs_metadata(nft):
 #main
 
 if len(sys.argv) < 3:
-    print("Usage: nft.py {command} {nft filename} [args...]")
-    print("Commands: upload_ipfs, create_token, mint_token")
+    print("Usage: nft.py {command} {nft descriptor filename}")
+    print("Commands: upload_ipfs, create_token, mint_token, full_service")
     sys.exit(1)
 
 with open('config.json') as f:
@@ -183,42 +183,58 @@ print(f"processing:\n{json.dumps(nft)}")
 
 working_directory = os.path.dirname(os.path.abspath(filename))
 
-if command == 'upload_ipfs':
+def upload_ipfs():
     nft['metadata_ipfs_hash'] = upload_assets_to_pinata(nft)
     with open(filename, 'w') as f:
-        f.write(json.dumps(nft))
+        f.write(json.dumps(nft, indent=2))
     print(f"IPFS hash persisted into {filename}")
-elif command == 'create_token':
+
+def create_token(peppermint_handler, token_id):
     ipfs_hash = nft.get('metadata_ipfs_hash')
     if not ipfs_hash:
         print("NFT metadata is not in IPFS yet")
         sys.exit(1)
-    if len(sys.argv) > 3:
-        peppermint_handler = sys.argv[3]
-    else:
-        print("Usage: nft.py create_token {nft filename} {peppermint handler} [token_id]")
-        sys.exit(1)
-    if len(sys.argv) > 4:
-        token_id = sys.argv[4]
-    else:
-        token_id = get_token_id(nft['metadata_ipfs_hash'])
-    queue_create_op(nft['metadata_ipfs_hash'], token_id, peppermint_handler, config['PEPPERMINT_ORIGINATOR'])
-    nft['peppermint_handler'] = peppermint_handler
-    nft['token_id'] = token_id
-    with open(filename, 'w') as f:
-        f.write(json.dumps(nft))
-elif command == 'mint_token':
-    if len(sys.argv) > 3:
-        destinations_filename = sys.argv[3]
-    else:
-        print("Usage: nft.py mint_token {nft filename} {destinations filename}")
-        sys.exit(1)
-    peppermint_handler = nft.get('peppermint_handler')
-    token_id = nft.get('token_id')
+    # if len(sys.argv) > 3:
+    #     peppermint_handler = sys.argv[3]
+    # else:
+    #     print("Usage: nft.py create_token {nft filename} {peppermint handler} [token_id]")
+    #     sys.exit(1)
+    # if len(sys.argv) > 4:
+    #     token_id = sys.argv[4]
+    # else:
+    #     token_id = get_token_id(nft['metadata_ipfs_hash'])
     if (not peppermint_handler) or (not token_id):
-        print("Peppermint handler and token_id not available yet")
+        print("Peppermint handler and token_id not available")
         sys.exit(1)
-    with open(destinations_filename) as f:
-        destinations = json.load(f)
+    queue_create_op(nft['metadata_ipfs_hash'], token_id, peppermint_handler, config['PEPPERMINT_ORIGINATOR'])
+    # nft['peppermint_handler'] = peppermint_handler
+    # nft['token_id'] = token_id
+    # with open(filename, 'w') as f:
+    #     f.write(json.dumps(nft, indent=2))
+
+def mint_token(destinations):
+    # if len(sys.argv) > 3:
+    #     destinations_filename = sys.argv[3]
+    # else:
+    #     print("Usage: nft.py mint_token {nft filename} {destinations filename}")
+    #     sys.exit(1)
+    # peppermint_handler = nft.get('peppermint_handler')
+    # token_id = nft.get('token_id')
+    if (not peppermint_handler) or (not token_id):
+        print("Peppermint handler and token_id not available")
+        sys.exit(1)
+    # with open(destinations_filename) as f:
+    #     destinations = json.load(f)
     for d in destinations:
         queue_mint_op(token_id, d, peppermint_handler, config['PEPPERMINT_ORIGINATOR'])
+
+if command == 'upload_ipfs':
+    upload_ipfs()
+elif command == 'create_token':
+    create_token(nft['peppermint_handler'], nft['token_id'])
+elif command == 'mint_token':
+    mint_token(nft['destinations'])
+elif command = 'full_service':
+    upload_ipfs()
+    create_token(nft['peppermint_handler'], nft['token_id'])
+    mint_token(nft['destinations'])
