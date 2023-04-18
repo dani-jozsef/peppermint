@@ -212,7 +212,7 @@ def create_token(peppermint_handler, token_id):
     # with open(filename, 'w') as f:
     #     f.write(json.dumps(nft, indent=2))
 
-def mint_token(destinations):
+def mint_token(destinations, peppermint_handler, token_id):
     # if len(sys.argv) > 3:
     #     destinations_filename = sys.argv[3]
     # else:
@@ -233,8 +233,8 @@ if command == 'upload_ipfs':
 elif command == 'create_token':
     create_token(nft['peppermint_handler'], nft['token_id'])
 elif command == 'mint_token':
-    mint_token(nft['destinations'])
+    mint_token(nft['destinations'], nft['peppermint_handler'], nft['token_id'])
 elif command == 'full_service':
     upload_ipfs()
     create_token(nft['peppermint_handler'], nft['token_id'])
-    mint_token(nft['destinations'])
+    mint_token(nft['destinations'], nft['peppermint_handler'], nft['token_id'])
