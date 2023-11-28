@@ -71,12 +71,17 @@ const main = async function() {
 	const dispatch_command = function(command, batch) {
 		let handler = handlers[command.handler];
 		if (handler) {
-			let handling_function = handler[command.name];
-			if (handling_function) {
-				return handling_function(command.args, batch);
+			try {
+				let handling_function = handler[command.name];
+				if (handling_function) {
+					return handling_function(command.args, batch);
+				}
+			} catch (err) {
+				console.warn(`Encountered an error in handling command ${command.handler}.${command.name}:\n`, err);
 			}
+		} else {
+			console.warn("Invalid comand:", JSON.stringify(command));
 		}
-		console.warn("Invalid comand:", JSON.stringify(command));
 		return false;
 	}
 
